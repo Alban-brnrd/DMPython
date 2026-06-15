@@ -20,6 +20,7 @@ def charger_donnees():
     return df
 
 df = charger_donnees()
+df["station"] = df["acces"].str.replace("Métro ", "").str.split("(").str[0].str.strip()
 
 # En-tête du site Streamlit
 
@@ -50,14 +51,23 @@ arrondissements_choisis = st.sidebar.multiselect(
     default=liste_arrondissements,
     format_func=lambda x: f"Paris {str(x)[-2:]}"  # Affiche "Paris 08" au lieu de "75008"
 )
+# Filtre 3 : Filtre par métro
+liste_stations = sorted(df["station"].unique().tolist())
 
-# Filtre 3 : Checkbox pour afficher plus d'informations
+stations_choisies = st.sidebar.multiselect(
+    "Filtrer par station de métro",
+    options=liste_stations,
+    default=liste_stations
+)
+
+# Filtre 4 : Checkbox pour afficher plus d'informations
 afficher_details = st.sidebar.checkbox("Afficher les colonnes détaillées", value=False)
 
 st.sidebar.divider()
 st.sidebar.info("💡 **Astuce :** Cliquez sur un marqueur de la carte pour voir les infos de l'espace !")
 
 df_filtre = df.copy()
+
 
 # Application du filtre par arrondissement
 if arrondissements_choisis:
@@ -68,6 +78,10 @@ if recherche_nom:
     df_filtre = df_filtre[
         df_filtre["titre"].str.contains(recherche_nom, case=False, na=False)
     ]
+# Application du filtre par métro
+df_filtre["station"] = df_filtre["acces"].str.replace("Métro ", "").str.split("(").str[0].str.strip()
+if stations_choisies:
+    df_filtre = df_filtre[df_filtre["station"].isin(stations_choisies)]
 
 # KPI
 col1, col2, col3 = st.columns(3)
@@ -201,7 +215,7 @@ with col_graph2:
     if len(df_filtre) == 0:
         st.warning("Aucune donnée à afficher.")
     else:
-        repartition_metro = df_filtre.groupby("station").size()
+        repartition_metro = df_filtre.groupby("metro").size()
 
         fig, ax = plt.subplots()
         ax.pie(
