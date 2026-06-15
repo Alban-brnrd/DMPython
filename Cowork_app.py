@@ -1,18 +1,20 @@
 # Devoir Maison - Streamlit & Folium - Alban BERNARD
 
+#Chargement des bibliothèques nécessaires
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import folium_static
 
+#Création de la page
 st.set_page_config(
     page_title="Coworking Paris",
     page_icon="🏢",
     layout="wide"   # On utilise toute la largeur de la page
 )
 
-# Chargement des données
+# Chargement des données en cache
 @st.cache_data
 def charger_donnees():
     # On lit le fichier CSV qui contient nos espaces de coworking
@@ -64,7 +66,7 @@ stations_choisies = st.sidebar.multiselect(
 afficher_details = st.sidebar.checkbox("Afficher les colonnes détaillées", value=False)
 
 st.sidebar.divider()
-st.sidebar.info("💡 **Astuce :** Cliquez sur un marqueur de la carte pour voir les infos de l'espace !")
+st.sidebar.info("**Astuce :** Cliquez sur un marqueur de la carte pour voir les infos de l'espace !")
 
 df_filtre = df.copy()
 
@@ -86,6 +88,7 @@ if stations_choisies:
 # KPI
 col1, col2, col3 = st.columns(3)
 
+# Nombre d'espace de cowork
 with col1:
     st.metric(
         label="Espaces trouvés",
@@ -93,6 +96,7 @@ with col1:
         delta=f"sur {len(df)} au total"
     )
 
+# Nombre d'arrondissements
 with col2:
     nb_arrondissements = df_filtre["arrondissement"].nunique()
     st.metric(
@@ -100,6 +104,7 @@ with col2:
         value=nb_arrondissements
     )
 
+# Nombre de cowork avec un lien
 with col3:
     # On compte les espaces qui ont un site web renseigné
     avec_site = df_filtre["siteweb"].notna().sum()
@@ -110,7 +115,7 @@ with col3:
 
 st.divider()
 
-
+# Passage à la partie Tableau
 st.subheader("📋 Liste des espaces de coworking")
 
 # On vérifie qu'il y a bien des résultats à afficher
@@ -122,7 +127,7 @@ else:
         # Version détaillée avec toutes les colonnes utiles
         colonnes_a_afficher = ["titre", "arrondissement", "adresse", "telephone", "acces", "siteweb", "description"]
     else:
-        # Version simplifiée pour une lecture rapide
+        # Version simplifiée
         colonnes_a_afficher = ["titre", "arrondissement", "adresse", "telephone", "acces"]
 
     # Renommage
@@ -197,10 +202,10 @@ folium_static(carte, width=1000, height=500)
 
 st.divider()
 
-
 # Statistiques
 col_graph1, col_graph2 = st.columns(2)
 
+# Graphie bar chart cowork par arrondissement
 with col_graph1:
     st.subheader("📊 Répartition par arrondissement")
     repartition = df_filtre.groupby("arrondissement").size().reset_index()
@@ -210,6 +215,7 @@ with col_graph1:
     )
     st.bar_chart(repartition.set_index("Arrondissement")["nb_espaces"])
 
+# Graphique pie chart cowork par métro
 with col_graph2:
     st.subheader("🚇 Répartition par station de métro")
     repartition_metro = df_filtre.groupby("station").size()
