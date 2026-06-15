@@ -212,25 +212,17 @@ with col_graph1:
 
 with col_graph2:
     st.subheader("🚇 Répartition par station de métro")
-    if len(df_filtre) == 0:
-        st.warning("Aucune donnée à afficher.")
-    else:
-        repartition_metro = df_filtre.groupby("metro").size()
+    repartition_metro = df_filtre.groupby("station").size()
 
-        fig, ax = plt.subplots()
-        ax.pie(
-            repartition_metro.values,
-            labels=repartition_metro.index,
-            autopct="%1.0f%%",
-            startangle=90
-        )
-        ax.axis("equal")
-        st.pyplot(fig)
-
-# On affiche le graphique en barres
-st.bar_chart(
-    repartition.set_index("Arrondissement")["nb_espaces"]
-)
+    fig, ax = plt.subplots()
+    ax.pie(
+        repartition_metro.values,
+        labels=repartition_metro.index,
+        autopct="%1.0f%%",
+        startangle=90
+    )
+    ax.axis("equal")
+    st.pyplot(fig)
 
 # Pied de page
 st.divider()
